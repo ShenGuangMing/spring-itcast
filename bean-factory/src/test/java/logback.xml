@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+
+    <!-- 服务名，统一应用于log文件名 -->
+    <property name="SERVER-NAME" value="user-server"/>
+
+    <!-- 配置不同环境下的日志存储目录，会自动识别yml中active指定的环境 -->
+<!--    <springProfile name="dev">
+        <property name="LOG_HOME" value="C:/Users/chy/Desktop/日志"/>
+    </springProfile>
+    <springProfile name="test">
+        <property name="LOG_HOME" value="/app/微服务/${SERVER-NAME}"/>
+    </springProfile>
+    <springProfile name="prod">
+        <property name="LOG_HOME" value="/var/logs/${SERVER-NAME}"/>
+    </springProfile>-->
+
+    <!-- 指定彩色日志渲染规则 -->
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex"
+                    converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx"
+                    converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+
+    <!-- 指定彩色日志的格式，LN后面是行数 -->
+    <property name="CONSOLE_LOG_PATTERN"
+              value="${CONSOLE_LOG_PATTERN:-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:-}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(LN:%L  ){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!-- 引用日志格式 -->
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 逐日输出文件 -->
+    <appender name="DAY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 日志文件名 -->
+            <FileNamePattern>${LOG_HOME}/${SERVER-NAME}-%d{yyyy-MM-dd}.log</FileNamePattern>
+            <!-- 日志文件保留天数 -->
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!-- 指定格式：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符 -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <!--<pattern>${CONSOLE_LOG_PATTERN}</pattern>-->
+        </encoder>
+        <!-- 日志文件最大体积 -->
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>500MB</MaxFileSize>
+        </triggeringPolicy>
+    </appender>
+
+    <!-- 全部日志输出到一个文件中，用于springboot admin实时查看应用日志 -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_HOME}/${SERVER-NAME}-all.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!-- 指定格式：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符 -->
+            <!--<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>-->
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 默认输出级别 -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="DAY_FILE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+    <!-- 给特殊的包指定输出级别 -->
+    <logger name="com.apache.ibatis" level="WARN" />
+    <logger name="java.sql.Connection" level="WARN" />
+    <logger name="java.sql.Statement" level="WARN" />
+    <logger name="java.sql.PreparedStatement" level="WARN" />
+    <logger name="java.sql.ResultSet" level="DEBUG" />
+    <logger name="com.alibaba.druid.pool.DruidPooledResultSet" level="ERROR" />
+
+    <logger name="org.apache.shiro" level="WARN" />
+    <logger name="springfox.documentation" level="WARN" />
+
+</configuration>
